@@ -1,0 +1,10 @@
+# Add files here to ignore them from prettier formatting
+
+/dist
+/coverage
+*.jsons
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
