@@ -1,9 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { InfluencersService } from './influencers.service';
-import { getModelToken } from '@nestjs/mongoose';
-import { Influencer, InfluencerDocument } from './schemas/influencer.schema';
-import { Model } from 'mongoose';
 import { NotFoundException } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, TestingModule } from '@nestjs/testing';
+import { Model } from 'mongoose';
+import { InfluencersService } from './influencers.service';
+import { Influencer, InfluencerDocument } from './schemas/influencer.schema';
+
+// Mock the isValidObjectId function to always return true in tests
+jest.mock('mongoose', () => {
+  const originalModule = jest.requireActual('mongoose');
+  return {
+    ...originalModule,
+    isValidObjectId: jest.fn().mockReturnValue(true),
+  };
+});
 
 const mockInfluencer = {
   _id: 'a-mock-id',
