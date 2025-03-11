@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SeedCommand } from './seed.command';
 import { UsersModule } from '../../users/users.module';
+import { DatabaseSeeder } from './database.seeder';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { UsersModule } from '../../users/users.module';
     ),
     UsersModule,
   ],
-  providers: [SeedCommand],
+  providers: [SeedCommand, DatabaseSeeder],
 })
 export class SeedModule {}

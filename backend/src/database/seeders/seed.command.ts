@@ -1,42 +1,28 @@
 import { Command, CommandRunner } from 'nest-commander';
-import { Injectable } from '@nestjs/common';
-import { UsersService } from '../../users/users.service';
+import { Injectable, Logger } from '@nestjs/common';
+import { DatabaseSeeder } from './database.seeder';
 
 @Injectable()
 @Command({ name: 'seed', description: 'Seed the database with initial data' })
 export class SeedCommand extends CommandRunner {
-  constructor(private usersService: UsersService) {
+  private readonly logger = new Logger(SeedCommand.name);
+
+  constructor(private databaseSeeder: DatabaseSeeder) {
     super();
   }
 
   async run(): Promise<void> {
-    console.log('🌱 Starting database seeding...');
+    try {
+      this.logger.log('Starting database seeding process...');
 
-    await this.seedUsers();
+      // This will first drop all collections and then seed the database
+      await this.databaseSeeder.onModuleInit();
 
-    console.log('✅ Database seeding completed successfully!');
-    process.exit(0);
-  }
-
-  private async seedUsers() {
-    console.log('Seeding users...');
-
-    // Check if admin user exists
-    const adminExists = await this.usersService.findByUsername('admin');
-    if (!adminExists) {
-      console.log('Creating admin user...');
-      await this.usersService.create('admin', 'admin123', 'admin');
-    } else {
-      console.log('Admin user already exists, skipping...');
-    }
-
-    // Check if regular user exists
-    const userExists = await this.usersService.findByUsername('user');
-    if (!userExists) {
-      console.log('Creating regular user...');
-      await this.usersService.create('user', 'user123', 'user');
-    } else {
-      console.log('Regular user already exists, skipping...');
+      this.logger.log('Database seeding completed successfully');
+      process.exit(0);
+    } catch (error) {
+      this.logger.error('Error during database seeding:', error.message);
+      process.exit(1);
     }
   }
 }

@@ -27,12 +27,13 @@ export class UsersService {
     roles: string[] = ['user'],
   ): Promise<UserDocument> {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new this.userModel({
+    const userPayload = {
       username,
       email,
       password: hashedPassword,
       roles,
-    });
+    };
+    const newUser = new this.userModel(userPayload);
     return newUser.save();
   }
 
