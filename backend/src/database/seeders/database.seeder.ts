@@ -44,7 +44,7 @@ export class DatabaseSeeder implements OnModuleInit {
   }
 
   private async seedUsers() {
-    this.logger.log('Seeding users...');
+    this.logger.log('🌱 Seeding users...');
 
     // Check if admin user exists
     const adminExists = await this.usersService.findByUsername('admin');
