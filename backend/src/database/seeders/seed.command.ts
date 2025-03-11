@@ -25,7 +25,7 @@ export class SeedCommand extends CommandRunner {
     const adminExists = await this.usersService.findByUsername('admin');
     if (!adminExists) {
       console.log('Creating admin user...');
-      await this.usersService.create('admin', 'admin123', ['admin']);
+      await this.usersService.create('admin', 'admin123', 'admin');
     } else {
       console.log('Admin user already exists, skipping...');
     }
@@ -34,7 +34,7 @@ export class SeedCommand extends CommandRunner {
     const userExists = await this.usersService.findByUsername('user');
     if (!userExists) {
       console.log('Creating regular user...');
-      await this.usersService.create('user', 'user123', ['user']);
+      await this.usersService.create('user', 'user123', 'user');
     } else {
       console.log('Regular user already exists, skipping...');
     }
