@@ -5,6 +5,7 @@ import { SeedCommand } from './seed.command';
 import { UsersModule } from '../../users/users.module';
 import { DatabaseSeeder } from './database.seeder';
 import { CampaignsModule } from '../../campaigns/campaigns.module';
+import { InfluencersModule } from '../../influencers/influencers.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CampaignsModule } from '../../campaigns/campaigns.module';
     ),
     UsersModule,
     CampaignsModule,
+    InfluencersModule,
   ],
   providers: [SeedCommand, DatabaseSeeder],
 })

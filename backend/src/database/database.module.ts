@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DatabaseSeeder } from './seeders/database.seeder';
 import { UsersModule } from '../users/users.module';
 import { CampaignsModule } from '../campaigns/campaigns.module';
+import { InfluencersModule } from '../influencers/influencers.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { CampaignsModule } from '../campaigns/campaigns.module';
     ),
     UsersModule,
     CampaignsModule,
+    InfluencersModule,
   ],
   providers: [DatabaseSeeder],
 })

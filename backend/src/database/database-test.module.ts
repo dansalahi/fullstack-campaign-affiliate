@@ -4,6 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { UsersModule } from '../users/users.module';
 import { CampaignsModule } from '../campaigns/campaigns.module';
 import { DatabaseSeeder } from './seeders/database.seeder';
+import { InfluencersModule } from '../influencers/influencers.module';
 
 let mongod: MongoMemoryServer;
 
@@ -20,6 +21,7 @@ let mongod: MongoMemoryServer;
     }),
     UsersModule,
     CampaignsModule,
+    InfluencersModule,
   ],
   providers: [DatabaseSeeder],
 })
