@@ -6,34 +6,8 @@ import * as session from 'express-session';
 import * as passport from 'passport';
 import { AppModule } from './app.module';
 
-// Request logging middleware
-function requestLogger(req: Request, res: Response, next: NextFunction) {
-  const { method, originalUrl, ip } = req;
-  const userAgent = req.get('user-agent') || '';
-
-  Logger.log(
-    `[REQUEST] ${method} ${originalUrl} - IP: ${ip} - User-Agent: ${userAgent}`,
-    'RequestLogger',
-  );
-
-  // Track response time
-  const start = Date.now();
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    Logger.log(
-      `[RESPONSE] ${method} ${originalUrl} - Status: ${res.statusCode} - Duration: ${duration}ms`,
-      'RequestLogger',
-    );
-  });
-
-  next();
-}
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  // Apply request logging middleware
-  app.use(requestLogger);
 
   app.use(
     session({
