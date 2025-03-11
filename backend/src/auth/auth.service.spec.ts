@@ -1,12 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
-import { AuthService } from './auth.service';
 import { UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from '../users/users.service';
-import { getModelToken } from '@nestjs/mongoose';
-import { User } from '../users/schemas/user.schema';
-import { DatabaseTestModule } from '../database/database-test.module';
-import * as bcrypt from 'bcrypt';
+import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -17,37 +13,23 @@ describe('AuthService', () => {
     sign: jest.fn().mockReturnValue('test-token'),
   };
 
-  const mockUserModel = {
-    findOne: jest.fn(),
-    findById: jest.fn(),
-    new: jest.fn().mockResolvedValue({
-      save: jest.fn().mockResolvedValue({
-        _id: 'some-id',
-        username: 'admin',
-        roles: ['admin'],
-        toObject: () => ({
-          _id: 'some-id',
-          username: 'admin',
-          roles: ['admin'],
-          password: 'hashed-password',
-        }),
-      }),
-    }),
+  // Create a mock for UsersService
+  const mockUsersService = {
+    findByUsername: jest.fn(),
+    validatePassword: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DatabaseTestModule],
       providers: [
         AuthService,
-        UsersService,
+        {
+          provide: UsersService,
+          useValue: mockUsersService,
+        },
         {
           provide: JwtService,
           useValue: mockJwtService,
-        },
-        {
-          provide: getModelToken(User.name),
-          useValue: mockUserModel,
         },
       ],
     }).compile();
@@ -56,37 +38,8 @@ describe('AuthService', () => {
     usersService = module.get<UsersService>(UsersService);
     jwtService = module.get<JwtService>(JwtService);
 
-    // Mock the findByUsername method
-    jest
-      .spyOn(usersService, 'findByUsername')
-      .mockImplementation(async (username) => {
-        if (username === 'admin') {
-          return {
-            _id: 'some-id',
-            username: 'admin',
-            password: await bcrypt.hash('admin123', 10),
-            roles: ['admin'],
-            toObject: () => ({
-              _id: 'some-id',
-              username: 'admin',
-              roles: ['admin'],
-              password: 'hashed-password',
-            }),
-          } as any;
-        }
-        return null;
-      });
-
-    // Mock the validatePassword method
-    jest
-      .spyOn(usersService, 'validatePassword')
-      .mockImplementation(async (user, password) => {
-        return password === 'admin123';
-      });
-  });
-
-  afterAll(async () => {
-    await DatabaseTestModule.closeDatabase();
+    // Reset mocks before each test
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -95,28 +48,89 @@ describe('AuthService', () => {
 
   describe('validateUser', () => {
     it('should return user object when credentials are valid', async () => {
+      // Mock the user object
+      const mockUser = {
+        _id: 'some-id',
+        username: 'admin',
+        password: 'hashed-password',
+        roles: ['admin'],
+        toObject: () => ({
+          _id: 'some-id',
+          username: 'admin',
+          roles: ['admin'],
+          password: 'hashed-password',
+        }),
+      };
+
+      // Setup the mocks
+      mockUsersService.findByUsername.mockResolvedValueOnce(mockUser);
+      mockUsersService.validatePassword.mockResolvedValueOnce(true);
+
       const result = await service.validateUser('admin', 'admin123');
+
       expect(result).toEqual({
         _id: 'some-id',
         username: 'admin',
         roles: ['admin'],
       });
+
+      expect(mockUsersService.findByUsername).toHaveBeenCalledWith('admin');
+      expect(mockUsersService.validatePassword).toHaveBeenCalledWith(
+        mockUser,
+        'admin123',
+      );
     });
 
     it('should return null when credentials are invalid', async () => {
+      // Mock the user object
+      const mockUser = {
+        _id: 'some-id',
+        username: 'admin',
+        password: 'hashed-password',
+        roles: ['admin'],
+      };
+
+      // Setup the mocks
+      mockUsersService.findByUsername.mockResolvedValueOnce(mockUser);
+      mockUsersService.validatePassword.mockResolvedValueOnce(false);
+
       const result = await service.validateUser('admin', 'wrongpassword');
+
       expect(result).toBeNull();
+
+      expect(mockUsersService.findByUsername).toHaveBeenCalledWith('admin');
+      expect(mockUsersService.validatePassword).toHaveBeenCalledWith(
+        mockUser,
+        'wrongpassword',
+      );
     });
 
     it('should return null when user does not exist', async () => {
+      // Setup the mocks
+      mockUsersService.findByUsername.mockResolvedValueOnce(null);
+
       const result = await service.validateUser('nonexistent', 'password');
+
       expect(result).toBeNull();
+
+      expect(mockUsersService.findByUsername).toHaveBeenCalledWith(
+        'nonexistent',
+      );
+      expect(mockUsersService.validatePassword).not.toHaveBeenCalled();
     });
   });
 
   describe('login', () => {
     it('should return access token and user info when credentials are valid', async () => {
+      // Mock the validateUser method
+      jest.spyOn(service, 'validateUser').mockResolvedValueOnce({
+        _id: 'some-id',
+        username: 'admin',
+        roles: ['admin'],
+      });
+
       const result = await service.login('admin', 'admin123');
+
       expect(result).toEqual({
         access_token: 'test-token',
         user: {
@@ -125,6 +139,8 @@ describe('AuthService', () => {
           roles: ['admin'],
         },
       });
+
+      expect(service.validateUser).toHaveBeenCalledWith('admin', 'admin123');
       expect(jwtService.sign).toHaveBeenCalledWith({
         sub: 'some-id',
         username: 'admin',
@@ -133,8 +149,16 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when credentials are invalid', async () => {
+      // Mock the validateUser method
+      jest.spyOn(service, 'validateUser').mockResolvedValueOnce(null);
+
       await expect(service.login('admin', 'wrongpassword')).rejects.toThrow(
         UnauthorizedException,
+      );
+
+      expect(service.validateUser).toHaveBeenCalledWith(
+        'admin',
+        'wrongpassword',
       );
     });
   });
