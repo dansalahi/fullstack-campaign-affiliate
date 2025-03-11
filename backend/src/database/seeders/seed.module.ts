@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { SeedCommand } from './seed.command';
 import { UsersModule } from '../../users/users.module';
 import { DatabaseSeeder } from './database.seeder';
+import { CampaignsModule } from '../../campaigns/campaigns.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { DatabaseSeeder } from './database.seeder';
       process.env.MONGODB_URI || 'mongodb://localhost:27017/auth-app',
     ),
     UsersModule,
+    CampaignsModule,
   ],
   providers: [SeedCommand, DatabaseSeeder],
 })
