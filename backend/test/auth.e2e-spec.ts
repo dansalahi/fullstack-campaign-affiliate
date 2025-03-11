@@ -37,6 +37,7 @@ describe('AuthController (e2e)', () => {
     // Define user schema for the test
     const userSchema = new mongoose.Schema({
       username: String,
+      email: String,
       password: String,
       roles: [String],
     });
@@ -48,6 +49,7 @@ describe('AuthController (e2e)', () => {
     const hashedPassword = await bcrypt.hash('admin123', 10);
     await userModel.create({
       username: 'admin',
+      email: 'admin@example.com',
       password: hashedPassword,
       roles: ['admin'],
     });
@@ -136,6 +138,57 @@ describe('AuthController (e2e)', () => {
         .expect((res) => {
           expect(res.body.message).toEqual('This is a protected route');
         });
+    });
+  });
+
+  describe('/auth/register (POST)', () => {
+    it('should register a new user and return JWT token', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          username: 'newuser',
+          email: 'newuser@example.com',
+          password: 'password123',
+        })
+        .expect(201)
+        .expect((res) => {
+          expect(res.body.access_token).toBeDefined();
+          expect(res.body.user).toBeDefined();
+          expect(res.body.user.username).toEqual('newuser');
+        });
+    });
+
+    it('should return 409 if username already exists', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          username: 'admin',
+          email: 'different@example.com',
+          password: 'password123',
+        })
+        .expect(409);
+    });
+
+    it('should return 409 if email already exists', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          username: 'differentuser',
+          email: 'admin@example.com',
+          password: 'password123',
+        })
+        .expect(409);
+    });
+
+    it('should return 400 for invalid data', () => {
+      return request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          username: 'user1',
+          // Missing email
+          password: 'pass', // Too short
+        })
+        .expect(400);
     });
   });
 });

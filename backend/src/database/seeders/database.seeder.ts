@@ -13,13 +13,17 @@ export class DatabaseSeeder implements OnModuleInit {
     // Check if admin user exists
     const adminExists = await this.usersService.findByUsername('admin');
     if (!adminExists) {
-      await this.usersService.create('admin', 'admin123', ['admin']);
+      await this.usersService.create('admin', 'admin@example.com', 'admin123', [
+        'admin',
+      ]);
     }
 
     // Check if regular user exists
     const userExists = await this.usersService.findByUsername('user');
     if (!userExists) {
-      await this.usersService.create('user', 'user123', ['user']);
+      await this.usersService.create('user', 'user@example.com', 'user123', [
+        'user',
+      ]);
     }
   }
 }
