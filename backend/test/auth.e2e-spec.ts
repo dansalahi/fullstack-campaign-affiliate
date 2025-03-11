@@ -7,29 +7,42 @@ import * as session from 'express-session';
 import { getModelToken } from '@nestjs/mongoose';
 import { User } from '../src/users/schemas/user.schema';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Connection, connect, Model, model, Schema } from 'mongoose';
+import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let mongod: MongoMemoryServer;
-  let mongoConnection: Connection;
-  let userModel: Model<any>;
+  let mongoConnection: mongoose.Connection;
+  let userModel: mongoose.Model<any>;
   let jwtToken: string;
 
   beforeAll(async () => {
+    // Set environment variables first
+    process.env.JWT_SECRET = 'test-secret-key';
+    process.env.JWT_EXPIRATION_TIME = '1h';
+    process.env.SESSION_SECRET = 'test-session-secret';
+
     // Set up MongoDB Memory Server
     mongod = await MongoMemoryServer.create();
     const uri = mongod.getUri();
-    mongoConnection = await connect(uri);
+    process.env.MONGODB_URI = uri;
+
+    // Connect to the in-memory database
+    await mongoose.connect(uri);
+    mongoConnection = mongoose.connection;
 
     // Define user schema for the test
-    const userSchema = new Schema({
+    const userSchema = new mongoose.Schema({
       username: String,
       password: String,
       roles: [String],
     });
-    userModel = model('User', userSchema);
+
+    // Create the model
+    userModel = mongoose.model('User', userSchema);
 
     // Create test users
     const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -39,14 +52,22 @@ describe('AuthController (e2e)', () => {
       roles: ['admin'],
     });
 
-    // Set environment variables
-    process.env.JWT_SECRET = 'test-secret';
-    process.env.JWT_EXPIRATION_TIME = '1h';
-    process.env.SESSION_SECRET = 'test-session-secret';
-    process.env.MONGODB_URI = uri;
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [
+        ConfigModule.forRoot({
+          isGlobal: true,
+          // Load environment variables explicitly for testing
+          load: [
+            () => ({
+              JWT_SECRET: process.env.JWT_SECRET,
+              JWT_EXPIRATION_TIME: process.env.JWT_EXPIRATION_TIME,
+              MONGODB_URI: process.env.MONGODB_URI,
+              SESSION_SECRET: process.env.SESSION_SECRET,
+            }),
+          ],
+        }),
+        AppModule,
+      ],
     })
       .overrideProvider(getModelToken(User.name))
       .useValue(userModel)
