@@ -4,6 +4,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { CampaignsService } from '../../campaigns/campaigns.service';
 import { InfluencersService } from '../../influencers/influencers.service';
+import { CampaignInfluencersService } from '../../campaign-influencers/campaign-influencers.service';
 
 @Injectable()
 export class DatabaseSeeder implements OnModuleInit {
@@ -13,14 +14,16 @@ export class DatabaseSeeder implements OnModuleInit {
     private usersService: UsersService,
     private campaignsService: CampaignsService,
     private influencersService: InfluencersService,
+    private campaignInfluencersService: CampaignInfluencersService,
     @InjectConnection() private connection: Connection,
   ) {}
 
   public async onModuleInit() {
-    await this.dropCollections();
+    // await this.dropCollections();
     await this.seedUsers();
     await this.seedCampaigns();
     await this.seedInfluencers();
+    await this.seedCampaignInfluencers();
     this.logger.log('Database seeding completed');
   }
 
@@ -153,6 +156,85 @@ export class DatabaseSeeder implements OnModuleInit {
       this.logger.log('Third sample influencer created');
     } catch (error) {
       this.logger.error('Error seeding influencers:', error.message);
+    }
+  }
+
+  private async seedCampaignInfluencers() {
+    this.logger.log('🌱 Seeding campaign influencers...');
+
+    try {
+      // Get all campaigns and influencers
+      const campaigns = await this.campaignsService.findAll();
+      const influencers = await this.influencersService.findAll();
+
+      if (campaigns.length === 0 || influencers.length === 0) {
+        this.logger.warn(
+          'No campaigns or influencers found for seeding campaign influencers',
+        );
+        return;
+      }
+
+      // Assign the first influencer to the first campaign
+      const campaignInfluencerData1 = {
+        campaignId: campaigns[0]._id.toString(),
+        influencerId: influencers[0]._id.toString(),
+        cost: 206400, // Slightly higher than base cost
+        assignedCoupons: 10,
+        status: 'active',
+      };
+
+      await this.campaignInfluencersService.create(campaignInfluencerData1);
+      this.logger.log(
+        `Campaign influencer created: ${influencers[0].name} assigned to ${campaigns[0].name}`,
+      );
+
+      // Assign the second influencer to the first campaign
+      const campaignInfluencerData2 = {
+        campaignId: campaigns[0]._id.toString(),
+        influencerId: influencers[1]._id.toString(),
+        cost: 155000, // Slightly higher than base cost
+        assignedCoupons: 8,
+        status: 'active',
+      };
+
+      await this.campaignInfluencersService.create(campaignInfluencerData2);
+      this.logger.log(
+        `Campaign influencer created: ${influencers[1].name} assigned to ${campaigns[0].name}`,
+      );
+
+      // Assign the third influencer to the second campaign
+      if (campaigns.length > 1 && influencers.length > 2) {
+        const campaignInfluencerData3 = {
+          campaignId: campaigns[1]._id.toString(),
+          influencerId: influencers[2]._id.toString(),
+          cost: 310000, // Slightly higher than base cost
+          assignedCoupons: 15,
+          status: 'invited',
+        };
+
+        await this.campaignInfluencersService.create(campaignInfluencerData3);
+        this.logger.log(
+          `Campaign influencer created: ${influencers[2].name} assigned to ${campaigns[1].name}`,
+        );
+      }
+
+      // Assign the first influencer to the second campaign as well
+      if (campaigns.length > 1) {
+        const campaignInfluencerData4 = {
+          campaignId: campaigns[1]._id.toString(),
+          influencerId: influencers[0]._id.toString(),
+          cost: 210000, // Different cost for different campaign
+          assignedCoupons: 12,
+          status: 'active',
+        };
+
+        await this.campaignInfluencersService.create(campaignInfluencerData4);
+        this.logger.log(
+          `Campaign influencer created: ${influencers[0].name} assigned to ${campaigns[1].name}`,
+        );
+      }
+    } catch (error) {
+      this.logger.error('Error seeding campaign influencers:', error.message);
     }
   }
 }

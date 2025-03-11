@@ -4,6 +4,7 @@ import { DatabaseSeeder } from './seeders/database.seeder';
 import { UsersModule } from '../users/users.module';
 import { CampaignsModule } from '../campaigns/campaigns.module';
 import { InfluencersModule } from '../influencers/influencers.module';
+import { CampaignInfluencersModule } from '../campaign-influencers/campaign-influencers.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { InfluencersModule } from '../influencers/influencers.module';
     UsersModule,
     CampaignsModule,
     InfluencersModule,
+    CampaignInfluencersModule,
   ],
   providers: [DatabaseSeeder],
 })
