@@ -9,6 +9,7 @@ import { CampaignsModule } from './campaigns/campaigns.module';
 import { InfluencersModule } from './influencers/influencers.module';
 import { LoggerModule } from './logger/logger.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
+import { CampaignInfluencersModule } from './campaign-influencers/campaign-influencers.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { LoggerMiddleware } from './logger/logger.middleware';
     CampaignsModule,
     InfluencersModule,
     LoggerModule,
+    CampaignInfluencersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
