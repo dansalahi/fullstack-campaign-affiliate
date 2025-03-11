@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { CampaignsModule } from './campaigns/campaigns.module';
+import { InfluencersModule } from './influencers/influencers.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CampaignsModule } from './campaigns/campaigns.module';
     UsersModule,
     AuthModule,
     CampaignsModule,
+    InfluencersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
