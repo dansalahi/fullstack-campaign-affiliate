@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { UsersModule } from '../users/users.module';
+import { CampaignsModule } from '../campaigns/campaigns.module';
+import { DatabaseSeeder } from './seeders/database.seeder';
 
 let mongod: MongoMemoryServer;
 
@@ -15,7 +18,10 @@ let mongod: MongoMemoryServer;
         };
       },
     }),
+    UsersModule,
+    CampaignsModule,
   ],
+  providers: [DatabaseSeeder],
 })
 export class DatabaseTestModule {
   static async closeDatabase() {

@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { UsersService } from '../../users/users.service';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { CampaignsService } from '../../campaigns/campaigns.service';
 
 @Injectable()
 export class DatabaseSeeder implements OnModuleInit {
@@ -9,12 +10,14 @@ export class DatabaseSeeder implements OnModuleInit {
 
   constructor(
     private usersService: UsersService,
+    private campaignsService: CampaignsService,
     @InjectConnection() private connection: Connection,
   ) {}
 
   public async onModuleInit() {
     await this.dropCollections();
     await this.seedUsers();
+    await this.seedCampaigns();
     this.logger.log('Database seeding completed');
   }
 
@@ -62,6 +65,44 @@ export class DatabaseSeeder implements OnModuleInit {
         'user',
       ]);
       this.logger.log('Regular user created');
+    }
+  }
+
+  private async seedCampaigns() {
+    this.logger.log('🌱 Seeding campaigns...');
+
+    try {
+      // Sample campaign data
+      const campaignData = {
+        name: 'Summer Ebay affiliates',
+        type: 'Affiliate',
+        brandUrl: 'https://www.ebay.com',
+        countries: ['France', 'Germany', 'China', 'Malaysia'],
+        startDate: new Date('2023-12-15T00:00:00Z'),
+        endDate: new Date('2024-01-06T00:00:00Z'),
+        discountValue: 5,
+        couponsAvailable: 100,
+      };
+
+      await this.campaignsService.create(campaignData);
+      this.logger.log('Sample campaign created');
+
+      // Add more sample campaigns if needed
+      const additionalCampaign = {
+        name: 'Winter Amazon affiliates',
+        type: 'Affiliate',
+        brandUrl: 'https://www.amazon.com',
+        countries: ['USA', 'Canada', 'UK'],
+        startDate: new Date('2023-11-20T00:00:00Z'),
+        endDate: new Date('2023-12-31T00:00:00Z'),
+        discountValue: 10,
+        couponsAvailable: 200,
+      };
+
+      await this.campaignsService.create(additionalCampaign);
+      this.logger.log('Additional sample campaign created');
+    } catch (error) {
+      this.logger.error('Error seeding campaigns:', error.message);
     }
   }
 }
