@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+.card-wrapper {
+	@apply bg-green-100 rounded-md p-3;
+}
+
+.badge {
+	@apply inline-block bg-white rounded-xl px-2 py-1 text-sm;
+}
