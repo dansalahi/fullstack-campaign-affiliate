@@ -123,7 +123,7 @@ export class DatabaseSeeder implements OnModuleInit {
         followers: 1000000,
         status: 'verified',
         baseCost: 200000,
-        avatar: '1.jpg',
+        avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
       };
 
       await this.influencersService.create(influencerData);
@@ -136,7 +136,7 @@ export class DatabaseSeeder implements OnModuleInit {
         followers: 750000,
         status: 'verified',
         baseCost: 150000,
-        avatar: '2.jpg',
+        avatar: 'https://randomuser.me/api/portraits/women/32.jpg',
       };
 
       await this.influencersService.create(additionalInfluencer);
@@ -149,7 +149,7 @@ export class DatabaseSeeder implements OnModuleInit {
         followers: 2500000,
         status: 'pending',
         baseCost: 300000,
-        avatar: '3.jpg',
+        avatar: 'https://randomuser.me/api/portraits/men/33.jpg',
       };
 
       await this.influencersService.create(thirdInfluencer);
