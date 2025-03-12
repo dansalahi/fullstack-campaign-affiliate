@@ -1,4 +1,4 @@
-# Interview PR Application
+# Fullstack Campaign Affiliate - Frontend
 
 A React application with JWT authentication and protected routes.
 
